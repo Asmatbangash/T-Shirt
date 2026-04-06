@@ -1,13 +1,33 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ShoppingCart, Heart } from 'lucide-react'
-import { products } from '@/data/products'
-
-const featuredProducts = products.slice(0, 4)
+import ProductCardSkeleton from '@/components/Shop/ProductCardSkeleton'
+import { productAPI } from '@/services/api'
 
 export default function FeaturedProducts() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchFeaturedProducts()
+  }, [])
+
+  const fetchFeaturedProducts = async () => {
+    try {
+      const response = await productAPI.getFeaturedProducts(4)
+      if (response.success) {
+        setProducts(response.products)
+      }
+    } catch (error) {
+      console.error('Failed to fetch featured products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -19,39 +39,43 @@ export default function FeaturedProducts() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product) => (
-            <Link key={product.id} to={`/product/${product.id}`}>
-              <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="relative aspect-4/5 overflow-hidden bg-muted">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  {product.tag && (
-                    <Badge className="absolute top-3 left-3">{product.tag}</Badge>
-                  )}
-                  <Button 
-                    size="icon" 
-                    variant="secondary" 
-                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Heart className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Quick Add
-                  </Button>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold mb-1">{product.name}</h3>
-                  <p className="text-lg font-bold">${product.price}</p>
-                </div>
-              </Card>
-            </Link>
-          ))}
+          {loading ? (
+            [...Array(4)].map((_, i) => <ProductCardSkeleton key={i} />)
+          ) : (
+            products.map((product) => (
+              <Link key={product._id} to={`/product/${product._id}`}>
+                <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <div className="relative aspect-4/5 overflow-hidden bg-muted">
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    {product.tag && (
+                      <Badge className="absolute top-3 left-3">{product.tag}</Badge>
+                    )}
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Heart className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Quick Add
+                    </Button>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold mb-1">{product.name}</h3>
+                    <p className="text-lg font-bold">${product.price.toFixed(2)}</p>
+                  </div>
+                </Card>
+              </Link>
+            ))
+          )}
         </div>
 
         <div className="text-center mt-12">

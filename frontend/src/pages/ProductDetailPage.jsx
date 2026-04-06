@@ -1,24 +1,82 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { products } from '@/data/products'
+import { useState, useEffect } from 'react'
+import { useParams, Link } from 'react-router-dom'
 import Navbar from '@/components/Layout/Navbar'
 import Footer from '@/components/Layout/Footer'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { ShoppingCart, Heart, Star, Truck, Shield, RotateCcw } from 'lucide-react'
+import { ShoppingCart, Heart, Star, Truck, Shield, RotateCcw, Loader2, AlertCircle } from 'lucide-react'
+import { productAPI } from '@/services/api'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
-  const product = products.find(p => p.id === parseInt(id)) || products[0]
-  const relatedProducts = products.filter(p => p.id !== product.id).slice(0, 4)
+  const [product, setProduct] = useState(null)
+  const [relatedProducts, setRelatedProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState('M')
   const [selectedColor, setSelectedColor] = useState(0)
   const [quantity, setQuantity] = useState(1)
 
-  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+  useEffect(() => {
+    fetchProduct()
+  }, [id])
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true)
+      setError('')
+      
+      const response = await productAPI.getProductById(id)
+      
+      if (response.success) {
+        setProduct(response.product)
+        
+        // Fetch related products from same category
+        const relatedResponse = await productAPI.getProductsByCategory(response.product.category, 4)
+        if (relatedResponse.success) {
+          setRelatedProducts(relatedResponse.products.filter(p => p._id !== id))
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'Failed to load product')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Product Not Found</h2>
+            <p className="text-muted-foreground mb-6">{error || 'The product you are looking for does not exist.'}</p>
+            <Link to="/shop">
+              <Button>Back to Shop</Button>
+            </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -57,22 +115,22 @@ export default function ProductDetailPage() {
             {/* Product Info */}
             <div className="space-y-6">
               <div>
-                <Badge className="mb-3">In Stock</Badge>
+                <Badge className="mb-3">{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</Badge>
                 <h1 className="text-3xl sm:text-4xl font-bold mb-3">{product.name}</h1>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
                       <Star 
                         key={i} 
-                        className={`h-4 w-4 ${i < Math.floor(product.rating || 5) ? 'fill-primary text-primary' : 'text-muted'}`} 
+                        className={`h-4 w-4 ${i < Math.floor(product.rating || 0) ? 'fill-primary text-primary' : 'text-muted'}`} 
                       />
                     ))}
                   </div>
                   <span className="text-sm text-muted-foreground">
-                    {product.rating || 5} ({product.reviews || 0} reviews)
+                    {product.rating} ({product.reviews} reviews)
                   </span>
                 </div>
-                <p className="text-3xl font-bold">${product.price}</p>
+                <p className="text-3xl font-bold">${product.price.toFixed(2)}</p>
               </div>
 
               <p className="text-muted-foreground leading-relaxed">
@@ -80,42 +138,45 @@ export default function ProductDetailPage() {
               </p>
 
               {/* Color Selection */}
-              <div>
-                <label className="text-sm font-semibold mb-3 block">
-                  Color: {product.colors && product.colors[selectedColor] ? 
-                    (typeof product.colors[selectedColor] === 'string' ? 'Color' : product.colors[selectedColor]) : 'Black'}
-                </label>
-                <div className="flex gap-3">
-                  {product.colors && product.colors.map((color, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedColor(idx)}
-                      className={`h-12 w-12 rounded-full border-2 transition-all ${
-                        selectedColor === idx ? 'border-primary ring-2 ring-primary/20' : 'border-muted'
-                      }`}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
+              {product.colors && product.colors.length > 0 && (
+                <div>
+                  <label className="text-sm font-semibold mb-3 block">
+                    Color
+                  </label>
+                  <div className="flex gap-3">
+                    {product.colors.map((color, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedColor(idx)}
+                        className={`h-12 w-12 rounded-full border-2 transition-all ${
+                          selectedColor === idx ? 'border-primary ring-2 ring-primary/20' : 'border-muted'
+                        }`}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Size Selection */}
-              <div>
-                <label className="text-sm font-semibold mb-3 block">Size</label>
-                <div className="grid grid-cols-6 gap-2">
-                  {sizes.map((size) => (
-                    <Button
-                      key={size}
-                      variant={selectedSize === size ? 'default' : 'outline'}
-                      onClick={() => setSelectedSize(size)}
-                      className="h-12"
-                    >
-                      {size}
-                    </Button>
-                  ))}
+              {product.sizes && product.sizes.length > 0 && (
+                <div>
+                  <label className="text-sm font-semibold mb-3 block">Size</label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {product.sizes.map((size) => (
+                      <Button
+                        key={size}
+                        variant={selectedSize === size ? 'default' : 'outline'}
+                        onClick={() => setSelectedSize(size)}
+                        className="h-12"
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Quantity */}
               <div>
@@ -132,18 +193,26 @@ export default function ProductDetailPage() {
                   <Button 
                     variant="outline" 
                     size="icon"
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                    disabled={quantity >= product.stock}
                   >
                     +
                   </Button>
                 </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {product.stock} items available
+                </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
-                <Button size="lg" className="flex-1 h-12 text-base">
+                <Button 
+                  size="lg" 
+                  className="flex-1 h-12 text-base"
+                  disabled={product.stock === 0}
+                >
                   <ShoppingCart className="mr-2 h-5 w-5" />
-                  Add to Cart
+                  {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 w-12 p-0">
                   <Heart className="h-5 w-5" />
@@ -168,63 +237,31 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Reviews Section */}
-          <section className="mb-20">
-            <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <img 
-                        src="/api/placeholder/48/48" 
-                        alt="User"
-                        className="w-12 h-12 rounded-full"
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <div className="font-semibold">Customer Name</div>
-                            <div className="flex gap-1 mt-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star key={i} className="h-3 w-3 fill-primary text-primary" />
-                              ))}
-                            </div>
-                          </div>
-                          <span className="text-sm text-muted-foreground">2 days ago</span>
-                        </div>
-                        <p className="text-muted-foreground">
-                          Amazing quality! The fabric is soft and the print is crisp. Highly recommend.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-
           {/* Related Products */}
-          <section>
-            <h2 className="text-2xl font-bold mb-6">You Might Also Like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {relatedProducts.map((product) => (
-                <Card key={product.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all">
-                  <div className="relative aspect-4/5 overflow-hidden bg-muted">
-                    <img 
-                      src={product.image} 
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold mb-1">{product.name}</h3>
-                    <p className="text-lg font-bold">${product.price}</p>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </section>
+          {relatedProducts.length > 0 && (
+            <section>
+              <h2 className="text-2xl font-bold mb-6">You Might Also Like</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {relatedProducts.map((relatedProduct) => (
+                  <Link key={relatedProduct._id} to={`/product/${relatedProduct._id}`}>
+                    <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all">
+                      <div className="relative aspect-4/5 overflow-hidden bg-muted">
+                        <img 
+                          src={relatedProduct.image} 
+                          alt={relatedProduct.name}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold mb-1 line-clamp-1">{relatedProduct.name}</h3>
+                        <p className="text-lg font-bold">${relatedProduct.price.toFixed(2)}</p>
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </main>
 

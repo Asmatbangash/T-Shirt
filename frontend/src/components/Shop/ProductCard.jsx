@@ -5,8 +5,10 @@ import { Badge } from '@/components/ui/badge'
 import { ShoppingCart, Heart, Eye } from 'lucide-react'
 
 export default function ProductCard({ product }) {
+  const productId = product._id || product.id
+  
   return (
-    <Link to={`/product/${product.id}`}>
+    <Link to={`/product/${productId}`}>
       <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300">
       <div className="relative aspect-4/5 overflow-hidden bg-muted">
         <img 
@@ -39,8 +41,8 @@ export default function ProductCard({ product }) {
       <div className="p-4">
         <h3 className="font-semibold mb-1 line-clamp-1">{product.name}</h3>
         <div className="flex items-center justify-between">
-          <p className="text-lg font-bold">${product.price}</p>
-          {product.colors && (
+          <p className="text-lg font-bold">${product.price?.toFixed(2)}</p>
+          {product.colors && product.colors.length > 0 && (
             <div className="flex gap-1">
               {product.colors.slice(0, 3).map((color, i) => (
                 <div 
@@ -52,6 +54,13 @@ export default function ProductCard({ product }) {
             </div>
           )}
         </div>
+        {product.rating && (
+          <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+            <span>★</span>
+            <span>{product.rating}</span>
+            <span>({product.reviews})</span>
+          </div>
+        )}
       </div>
     </Card>
     </Link>

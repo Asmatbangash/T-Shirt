@@ -1,8 +1,19 @@
-import { Link } from 'react-router-dom'
-import { ShoppingCart, User, Menu, Search } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ShoppingCart, User, Menu, Search, LogOut, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { useAuth } from '@/context/AuthContext'
+import { isAdmin } from '@/utils/auth'
 
 export default function Navbar() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -28,7 +39,14 @@ export default function Navbar() {
               <Link to="/custom" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors">
                 Customize
               </Link>
-             
+              
+              {/* Admin Link */}
+              {isAdmin(user) && (
+                <Link to="/admin" className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors flex items-center gap-1">
+                  <Shield className="h-4 w-4" />
+                  Admin
+                </Link>
+              )}
             </div>
           </div>
 
@@ -37,11 +55,29 @@ export default function Navbar() {
             <Button variant="ghost" size="icon" className="hidden sm:flex">
               <Search className="h-5 w-5" />
             </Button>
-            <Link to="/login">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
+            
+            {user ? (
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {user.FullName}
+                  </span>
+                  {isAdmin(user) && (
+                    <Badge variant="secondary" className="text-xs">Admin</Badge>
+                  )}
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
+            ) : (
+              <Link to="/login">
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
+            
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
