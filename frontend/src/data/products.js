@@ -1,26 +1,12 @@
-import MidnightBlackTee from '@/assets/images/MidnightBlackTee.webp'
-import OceanBlueClassic from '@/assets/images/OceanBlueClassic.webp'
-import PureWhiteEssential from '@/assets/images/PureWhiteEssential.webp'
-import SunsetOrange from '@/assets/images/SunsetOrange.webp'
-import ForestGreen from '@/assets/images/ForestGreen.webp'
-import CharcoalGray from '@/assets/images/CharcoalGray.webp'
-import NavyBluePremium from '@/assets/images/NavyBluePremium.webp'
-import CrimsonRed from '@/assets/images/CrimsonRed.webp'
-import Oversized from '@/assets/images/Oversized.webp'
-import Minimal from '@/assets/images/Minimal.webp'
-import Custom from '@/assets/images/Custom.webp'
-import SarahJohnson from '@/assets/images/SarahJohnson.webp'
-import MikeChen from '@/assets/images/MikeChen.webp'
-import EmmaDavis from '@/assets/images/EmmaDavis.webp'
-
-// Product data with image paths
+// Product data - now using database, keeping this for reference
+// Images are served from public/images/ folder
 export const products = [
   {
     id: 1,
     name: 'Midnight Black Premium Tee',
     price: 29.99,
-    image: MidnightBlackTee,
-    images: [MidnightBlackTee, MidnightBlackTee, MidnightBlackTee, MidnightBlackTee],
+    image: '/images/MidnightBlackTee.webp',
+    images: ['/images/MidnightBlackTee.webp', '/images/MidnightBlackTee.webp', '/images/MidnightBlackTee.webp', '/images/MidnightBlackTee.webp'],
     tag: 'Bestseller',
     colors: ['#000000', '#FFFFFF', '#9CA3AF'],
     description: 'Our signature premium cotton tee in midnight black. Crafted from 100% organic cotton with a modern fit that drapes perfectly. Pre-shrunk and designed to last.',
@@ -31,8 +17,8 @@ export const products = [
     id: 2,
     name: 'Pure White Essential',
     price: 24.99,
-    image: PureWhiteEssential,
-    images: [PureWhiteEssential, PureWhiteEssential],
+    image: '/images/PureWhiteEssential.webp',
+    images: ['/images/PureWhiteEssential.webp', '/images/PureWhiteEssential.webp'],
     tag: 'New',
     colors: ['#FFFFFF', '#000000'],
     description: 'Classic white tee that goes with everything. Premium cotton blend for ultimate comfort.',
@@ -43,8 +29,8 @@ export const products = [
     id: 3,
     name: 'Ocean Blue Classic',
     price: 27.99,
-    image: OceanBlueClassic,
-    images: [OceanBlueClassic],
+    image: '/images/OceanBlueClassic.webp',
+    images: ['/images/OceanBlueClassic.webp'],
     colors: ['#3B82F6', '#000000'],
     description: 'Vibrant ocean blue for those who stand out. Fade-resistant dye and soft fabric.',
     rating: 4.7,
@@ -54,8 +40,8 @@ export const products = [
     id: 4,
     name: 'Sunset Orange',
     price: 29.99,
-    image: SunsetOrange,
-    images: [SunsetOrange],
+    image: '/images/SunsetOrange.webp',
+    images: ['/images/SunsetOrange.webp'],
     tag: 'Limited',
     colors: ['#F97316'],
     description: 'Bold sunset orange for the adventurous. Limited edition color.',
@@ -66,8 +52,8 @@ export const products = [
     id: 5,
     name: 'Forest Green',
     price: 26.99,
-    image: ForestGreen,
-    images: [ForestGreen, MidnightBlackTee, OceanBlueClassic, PureWhiteEssential],
+    image: '/images/ForestGreen.webp',
+    images: ['/images/ForestGreen.webp', '/images/MidnightBlackTee.webp', '/images/OceanBlueClassic.webp', '/images/PureWhiteEssential.webp'],
     colors: ['#10B981'],
     description: 'Deep forest green with earthy vibes. Eco-friendly organic cotton.',
     rating: 4.8,
@@ -77,8 +63,8 @@ export const products = [
     id: 6,
     name: 'Charcoal Gray',
     price: 25.99,
-    image: CharcoalGray,
-    images: [CharcoalGray, MidnightBlackTee, OceanBlueClassic, PureWhiteEssential],
+    image: '/images/CharcoalGray.webp',
+    images: ['/images/CharcoalGray.webp', '/images/MidnightBlackTee.webp', '/images/OceanBlueClassic.webp', '/images/PureWhiteEssential.webp'],
     colors: ['#6B7280'],
     description: 'Versatile charcoal gray for everyday wear. Soft and comfortable.',
     rating: 4.7,
@@ -88,8 +74,8 @@ export const products = [
     id: 7,
     name: 'Navy Blue Premium',
     price: 31.99,
-    image: NavyBluePremium,
-    images: [NavyBluePremium, MidnightBlackTee, SunsetOrange, PureWhiteEssential],
+    image: '/images/NavyBluePremium.webp',
+    images: ['/images/NavyBluePremium.webp', '/images/MidnightBlackTee.webp', '/images/SunsetOrange.webp', '/images/PureWhiteEssential.webp'],
     colors: ['#1E3A8A'],
     description: 'Classic navy blue with premium finish. Perfect for any occasion.',
     rating: 4.9,
@@ -99,8 +85,8 @@ export const products = [
     id: 8,
     name: 'Crimson Red',
     price: 28.99,
-    image: CrimsonRed,
-    images: [CrimsonRed, SunsetOrange, MidnightBlackTee, PureWhiteEssential],
+    image: '/images/CrimsonRed.webp',
+    images: ['/images/CrimsonRed.webp', '/images/SunsetOrange.webp', '/images/MidnightBlackTee.webp', '/images/PureWhiteEssential.webp'],
     tag: 'Hot',
     colors: ['#DC2626'],
     description: 'Bold crimson red that makes a statement. High-quality print retention.',
@@ -114,21 +100,21 @@ export const categories = [
     id: 1,
     name: 'Oversized',
     description: 'Relaxed fit for ultimate comfort',
-    image: Oversized,
+    image: '/images/Oversized.webp',
     color: 'from-blue-500/10 to-purple-500/10'
   },
   {
     id: 2,
     name: 'Minimal',
     description: 'Clean designs, maximum impact',
-    image: Minimal,
+    image: '/images/Minimal.webp',
     color: 'from-gray-500/10 to-slate-500/10'
   },
   {
     id: 3,
     name: 'Custom',
     description: 'Your design, your rules',
-    image: Custom,
+    image: '/images/Custom.webp',
     color: 'from-purple-500/10 to-pink-500/10'
   }
 ]
@@ -140,7 +126,7 @@ export const testimonials = [
     role: 'Designer',
     content: 'The quality is unmatched. My custom design came out exactly as I envisioned. Will definitely order again!',
     rating: 5,
-    avatar: SarahJohnson
+    avatar: '/images/SarahJohnson.webp'
   },
   {
     id: 2,
@@ -148,7 +134,7 @@ export const testimonials = [
     role: 'Entrepreneur',
     content: 'Perfect for my startup merch. Fast delivery, great print quality, and the fabric feels premium.',
     rating: 5,
-    avatar: MikeChen
+    avatar: '/images/MikeChen.webp'
   },
   {
     id: 3,
@@ -156,7 +142,7 @@ export const testimonials = [
     role: 'Artist',
     content: 'Love the customization options! The interface is so easy to use and the final product exceeded expectations.',
     rating: 5,
-    avatar: EmmaDavis
+    avatar: '/images/EmmaDavis.webp'
   }
 ]
 
@@ -168,7 +154,7 @@ export const cartItems = [
     color: 'Black',
     price: 29.99,
     quantity: 2,
-    image: MidnightBlackTee
+    image: '/images/MidnightBlackTee.webp'
   },
   {
     id: 2,
@@ -177,7 +163,7 @@ export const cartItems = [
     color: 'White',
     price: 24.99,
     quantity: 1,
-    image: PureWhiteEssential
+    image: '/images/PureWhiteEssential.webp'
   },
   {
     id: 3,
@@ -186,7 +172,7 @@ export const cartItems = [
     color: 'Blue',
     price: 27.99,
     quantity: 1,
-    image: OceanBlueClassic
+    image: '/images/OceanBlueClassic.webp'
   }
 ]
 

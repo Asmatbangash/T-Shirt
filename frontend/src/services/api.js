@@ -126,3 +126,83 @@ export const productAPI = {
     })
   },
 }
+
+// Cart API
+export const cartAPI = {
+  getCart: async () => {
+    return apiCall('/cart', {
+      method: 'GET',
+    })
+  },
+
+  addToCart: async (productId, quantity, size, color = '') => {
+    return apiCall('/cart/add', {
+      method: 'POST',
+      body: JSON.stringify({ productId, quantity, size, color }),
+    })
+  },
+
+  updateCartItem: async (productId, size, color, quantity) => {
+    return apiCall('/cart/update', {
+      method: 'PUT',
+      body: JSON.stringify({ productId, size, color, quantity }),
+    })
+  },
+
+  removeFromCart: async (productId, size, color = '') => {
+    return apiCall('/cart/remove', {
+      method: 'DELETE',
+      body: JSON.stringify({ productId, size, color }),
+    })
+  },
+
+  clearCart: async () => {
+    return apiCall('/cart/clear', {
+      method: 'DELETE',
+    })
+  },
+}
+
+// Order API
+export const orderAPI = {
+  createPaymentIntent: async (amount) => {
+    return apiCall('/orders/payment-intent', {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    })
+  },
+
+  createOrder: async (shippingAddress, paymentIntentId) => {
+    return apiCall('/orders', {
+      method: 'POST',
+      body: JSON.stringify({ shippingAddress, paymentIntentId }),
+    })
+  },
+
+  getUserOrders: async () => {
+    return apiCall('/orders/my-orders', {
+      method: 'GET',
+    })
+  },
+
+  getOrderById: async (id) => {
+    return apiCall(`/orders/${id}`, {
+      method: 'GET',
+    })
+  },
+
+  getAllOrders: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return apiCall(`/orders${queryString ? `?${queryString}` : ''}`, {
+      method: 'GET',
+    })
+  },
+
+  updateOrderStatus: async (id, status, trackingNumber, note) => {
+    return apiCall(`/orders/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, trackingNumber, note }),
+    })
+  },
+}
+

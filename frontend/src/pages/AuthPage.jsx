@@ -85,20 +85,6 @@ export default function AuthPage() {
           <h1 className="text-3xl font-bold mb-2">Threadify</h1>
           <p className="text-muted-foreground">Welcome back</p>
         </div>
-
-        {/* Dev Mode: Show Admin Credentials */}
-        {import.meta.env.DEV && (
-          <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">
-              🔐 Admin Test Credentials
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Email: admin@threadify.com<br />
-              Password: admin123456
-            </p>
-          </div>
-        )}
-
         <Card className="shadow-2xl border-0">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl">{isLogin ? 'Sign In' : 'Create Account'}</CardTitle>

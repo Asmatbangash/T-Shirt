@@ -112,7 +112,7 @@ export default function ShopPage() {
           {/* Error Message */}
           {error && (
             <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg flex items-start gap-2 mb-6">
-              <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
               <p className="text-sm">{error}</p>
             </div>
           )}
