@@ -15,11 +15,17 @@ const apiCall = async (endpoint, options = {}) => {
     const data = await response.json()
 
     if (!response.ok) {
-      throw new Error(data.message || 'Something went wrong')
+      const error = new Error(data.message || 'Something went wrong')
+      error.status = response.status
+      throw error
     }
 
     return data
   } catch (error) {
+    // Add status code to error if not already present
+    if (!error.status && error.message) {
+      error.status = 500
+    }
     throw error
   }
 }
@@ -206,3 +212,90 @@ export const orderAPI = {
   },
 }
 
+
+
+// Upload API
+export const uploadAPI = {
+  uploadSingleImage: async (file) => {
+    try {
+      // Client-side validation
+      const maxSize = 5 * 1024 * 1024 // 5MB
+      if (file.size > maxSize) {
+        throw new Error(`Image file is too large (${(file.size / 1024 / 1024).toFixed(2)}MB). Maximum size is 5MB.`)
+      }
+
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await fetch(`${API_BASE_URL}/upload/single`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      })
+
+      // Try to parse as JSON
+      let data
+      const contentType = response.headers.get('content-type')
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json()
+      } else {
+        // If not JSON, it's likely an HTML error page
+        const text = await response.text()
+        console.error('Non-JSON response:', text.substring(0, 200))
+        throw new Error('Server returned an invalid response. Please check server logs.')
+      }
+
+      if (!response.ok) {
+        // Use the error message from backend if available
+        throw new Error(data.error || data.message || 'Failed to upload image')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Upload error:', error)
+      throw error
+    }
+  },
+
+  uploadMultipleImages: async (files) => {
+    try {
+      const formData = new FormData()
+      files.forEach(file => {
+        formData.append('images', file)
+      })
+
+      const response = await fetch(`${API_BASE_URL}/upload/multiple`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      })
+
+      let data
+      const contentType = response.headers.get('content-type')
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json()
+      } else {
+        const text = await response.text()
+        console.error('Non-JSON response:', text.substring(0, 200))
+        throw new Error('Server returned an invalid response. Please check server logs.')
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to upload images')
+      }
+
+      return data
+    } catch (error) {
+      console.error('Upload error:', error)
+      throw error
+    }
+  },
+
+  deleteImage: async (publicId) => {
+    return apiCall(`/upload/${publicId}`, {
+      method: 'DELETE',
+    })
+  },
+}

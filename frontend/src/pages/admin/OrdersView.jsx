@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,23 +26,37 @@ export default function OrdersView() {
   }
 
   const handleExport = () => {
-    // Create CSV content
-    const headers = ['Order ID', 'Customer', 'Date', 'Product', 'Amount', 'Status']
-    const csvContent = [
-      headers.join(','),
-      ...filteredOrders.map(order => 
-        [order.id, order.customer, order.date, order.product, order.amount, order.status].join(',')
-      )
-    ].join('\n')
+    const exportToast = toast.loading('Preparing export...')
+    
+    try {
+      // Create CSV content
+      const headers = ['Order ID', 'Customer', 'Date', 'Product', 'Amount', 'Status']
+      const csvContent = [
+        headers.join(','),
+        ...filteredOrders.map(order => 
+          [order.id, order.customer, order.date, order.product, order.amount, order.status].join(',')
+        )
+      ].join('\n')
 
-    // Create download link
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-    window.URL.revokeObjectURL(url)
+      // Create download link
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success('Orders exported!', {
+        id: exportToast,
+        description: 'CSV file has been downloaded'
+      })
+    } catch (error) {
+      toast.error('Export failed', {
+        id: exportToast,
+        description: 'Please try again'
+      })
+    }
   }
 
   const filteredOrders = orders.filter(order =>

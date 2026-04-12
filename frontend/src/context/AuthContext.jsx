@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { userAPI } from '@/services/api'
+import { shouldLogError } from '@/utils/errorHandler'
 
 const AuthContext = createContext(null)
 
@@ -16,8 +17,11 @@ export const AuthProvider = ({ children }) => {
           setUser(response.user)
         }
       } catch (error) {
-        // No valid session, user stays null
-        console.log('No active session')
+        // Only log unexpected errors (not 401 when user isn't logged in)
+        if (shouldLogError(error)) {
+          console.error('Auth check error:', error.message)
+        }
+        // User stays null - this is expected when not logged in
       } finally {
         setLoading(false)
       }

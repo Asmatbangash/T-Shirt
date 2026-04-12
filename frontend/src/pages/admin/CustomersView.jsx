@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,9 +36,16 @@ export default function CustomersView() {
   }
 
   const handleSendEmail = () => {
+    const emailToast = toast.loading('Sending email...')
+    
     // In a real app, this would send an email via API
-    alert(`Email sent to ${selectedCustomer.email}`)
-    setIsEmailOpen(false)
+    setTimeout(() => {
+      toast.success('Email sent!', {
+        id: emailToast,
+        description: `Message sent to ${selectedCustomer.email}`
+      })
+      setIsEmailOpen(false)
+    }, 1000)
   }
 
   const filteredCustomers = customers.filter(customer =>

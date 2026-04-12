@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Mail, Lock, User, Loader2, AlertCircle } from 'lucide-react'
+import { Mail, Lock, User, Loader2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { userAPI } from '@/services/api'
 import { isAdmin } from '@/utils/auth'
@@ -44,6 +45,9 @@ export default function AuthPage() {
         
         if (response.success) {
           login(response.user)
+          toast.success('Welcome back!', {
+            description: `Logged in as ${response.user.FullName}`
+          })
           // Redirect admin to admin dashboard, regular users to home
           if (isAdmin(response.user)) {
             navigate('/admin')
@@ -67,11 +71,17 @@ export default function AuthPage() {
         
         if (response.success) {
           login(response.user)
+          toast.success('Account created!', {
+            description: `Welcome to Threadify, ${response.user.FullName}!`
+          })
           navigate('/')
         }
       }
     } catch (err) {
       setError(err.message || 'Something went wrong. Please try again.')
+      toast.error(isLogin ? 'Login failed' : 'Registration failed', {
+        description: err.message || 'Please check your credentials and try again'
+      })
     } finally {
       setLoading(false)
     }

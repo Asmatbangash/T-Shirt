@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { LazyImage } from '@/components/ui/lazy-image'
 import { ShoppingCart, Heart, Eye } from 'lucide-react'
 
 export default function ProductCard({ product }) {
@@ -11,7 +12,7 @@ export default function ProductCard({ product }) {
     <Link to={`/product/${productId}`}>
       <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300">
       <div className="relative aspect-4/5 overflow-hidden bg-muted">
-        <img 
+        <LazyImage
           src={product.image} 
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, LogOut, Home
 } from 'lucide-react'
@@ -18,7 +19,12 @@ export default function AdminDashboard() {
   const { logout } = useAuth()
 
   const handleLogout = async () => {
+    const logoutToast = toast.loading('Logging out...')
     await logout()
+    toast.success('Logged out successfully', {
+      id: logoutToast,
+      description: 'See you next time!'
+    })
     navigate('/login')
   }
 

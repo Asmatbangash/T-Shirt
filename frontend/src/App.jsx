@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Toaster } from 'sonner'
 import { AuthProvider } from '@/context/AuthContext'
 import { CartProvider } from '@/context/CartContext'
 import { AdminRoute } from '@/components/ProtectedRoute'
@@ -23,6 +24,17 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
+          <Toaster 
+            position="top-right" 
+            richColors 
+            closeButton
+            duration={4000}
+            toastOptions={{
+              style: {
+                padding: '16px',
+              },
+            }}
+          />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/shop" element={<ShopPage />} />

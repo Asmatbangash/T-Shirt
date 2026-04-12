@@ -1,23 +1,29 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { cartAPI } from '@/services/api'
 import { useAuth } from './AuthContext'
+import { shouldLogError } from '@/utils/errorHandler'
 
 const CartContext = createContext(null)
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(null)
   const [loading, setLoading] = useState(true)
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   // Fetch cart when user logs in
   useEffect(() => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      return
+    }
+
     if (user) {
       fetchCart()
     } else {
       setCart(null)
       setLoading(false)
     }
-  }, [user])
+  }, [user, authLoading])
 
   const fetchCart = async () => {
     try {
@@ -27,7 +33,12 @@ export const CartProvider = ({ children }) => {
         setCart(response.cart)
       }
     } catch (error) {
-      console.error('Error fetching cart:', error)
+      // Only log unexpected errors
+      if (shouldLogError(error)) {
+        console.error('Error fetching cart:', error)
+      }
+      // Set cart to null on error
+      setCart(null)
     } finally {
       setLoading(false)
     }

@@ -1,0 +1,236 @@
+# Cloudinary Image Upload Setup
+
+This guide explains the Cloudinary integration for image uploads in the Threadify application.
+
+## Features Implemented
+
+### Backend
+
+- ✅ Cloudinary configuration with environment variables
+- ✅ Multer middleware for file uploads
+- ✅ Single and multiple image upload endpoints
+- ✅ Image deletion functionality
+- ✅ Automatic image optimization (resize, quality, format)
+- ✅ Admin-only access to upload endpoints
+
+### Frontend
+
+- ✅ Image upload with file picker
+- ✅ Image preview before upload
+- ✅ Drag-and-drop support (UI ready)
+- ✅ Lazy loading for all product images
+- ✅ Intersection Observer for performance
+- ✅ Smooth loading transitions
+- ✅ Fallback to URL input
+
+## Configuration
+
+### Backend Environment Variables
+
+Add these to `backend/.env`:
+
+```env
+CLOUD_NAME=doqt4euf8
+CLOUD_API_KEY=953162968166223
+CLOUD_API_SECRET=11HQu1WJpehGHpRHe8ebyGmWDe8
+```
+
+### Cloudinary Settings
+
+Images are automatically:
+
+- Stored in `threadify-products` folder
+- Resized to max 1000x1000px
+- Optimized for quality and format
+- Limited to 5MB file size
+- Accepted formats: JPG, JPEG, PNG, WEBP, GIF
+
+## API Endpoints
+
+### Upload Single Image
+
+```
+POST /api/upload/single
+Authorization: Required (Admin only)
+Content-Type: multipart/form-data
+
+Body:
+- image: File
+
+Response:
+{
+  "success": true,
+  "message": "Image uploaded successfully",
+  "data": {
+    "url": "https://res.cloudinary.com/...",
+    "publicId": "threadify-products/..."
+  }
+}
+```
+
+### Upload Multiple Images
+
+```
+POST /api/upload/multiple
+Authorization: Required (Admin only)
+Content-Type: multipart/form-data
+
+Body:
+- images: File[] (max 5 files)
+
+Response:
+{
+  "success": true,
+  "message": "Images uploaded successfully",
+  "data": [
+    {
+      "url": "https://res.cloudinary.com/...",
+      "publicId": "threadify-products/..."
+    }
+  ]
+}
+```
+
+### Delete Image
+
+```
+DELETE /api/upload/:publicId
+Authorization: Required (Admin only)
+
+Response:
+{
+  "success": true,
+  "message": "Image deleted successfully"
+}
+```
+
+## Usage in Admin Panel
+
+### Adding a Product with Image Upload
+
+1. Click "Add Product" button
+2. Fill in product details
+3. Choose one of two options:
+   - **Upload File**: Click "Choose File" and select an image
+   - **Use URL**: Enter an image URL directly
+4. Preview the image before saving
+5. Click "Add Product" to save
+
+### Editing a Product
+
+1. Click the edit icon on any product
+2. The current image will be displayed
+3. You can:
+   - Keep the existing image
+   - Upload a new image (replaces old one)
+   - Remove and add a URL instead
+4. Click "Update Product" to save
+
+## Lazy Loading Implementation
+
+### LazyImage Component
+
+The `LazyImage` component provides:
+
+- Intersection Observer for viewport detection
+- Loads images 50px before entering viewport
+- Smooth fade-in transition
+- Placeholder animation while loading
+- Automatic cleanup on unmount
+
+### Usage Example
+
+```jsx
+import { LazyImage } from "@/components/ui/lazy-image";
+
+<LazyImage
+  src={product.image}
+  alt={product.name}
+  className="w-full h-full object-cover"
+/>;
+```
+
+### Where It's Used
+
+- ✅ Product cards in shop page
+- ✅ Featured products on home page
+- ✅ Product detail page
+- ✅ Admin product preview
+- ✅ Collections page
+
+## Performance Benefits
+
+### Image Optimization
+
+- Cloudinary automatically serves WebP format to supported browsers
+- Images are resized to optimal dimensions
+- Quality is automatically adjusted
+- CDN delivery for fast loading worldwide
+
+### Lazy Loading
+
+- Reduces initial page load time
+- Saves bandwidth for users
+- Improves Core Web Vitals scores
+- Better mobile performance
+- Smooth user experience
+
+## Testing
+
+### Test Image Upload
+
+1. Login as admin (admin@threadify.com / admin123456)
+2. Navigate to Admin Dashboard → Products
+3. Click "Add Product"
+4. Upload a test image (max 5MB)
+5. Verify image appears in preview
+6. Save product and check if image loads on shop page
+
+### Test Lazy Loading
+
+1. Open shop page with many products
+2. Open browser DevTools → Network tab
+3. Scroll down slowly
+4. Observe images loading only when near viewport
+5. Check for smooth fade-in transitions
+
+## Troubleshooting
+
+### Upload Fails
+
+- Check Cloudinary credentials in `.env`
+- Verify file size is under 5MB
+- Ensure file format is supported
+- Check admin authentication
+
+### Images Not Loading
+
+- Verify Cloudinary URL is accessible
+- Check browser console for errors
+- Ensure CORS is configured correctly
+- Test with direct Cloudinary URL
+
+### Lazy Loading Not Working
+
+- Check if Intersection Observer is supported
+- Verify component is properly imported
+- Check browser console for errors
+- Test in different browsers
+
+## Security
+
+- All upload endpoints require admin authentication
+- File size limited to 5MB
+- Only image formats allowed
+- Cloudinary handles malicious file detection
+- Public IDs are auto-generated by Cloudinary
+
+## Future Enhancements
+
+- [ ] Multiple image upload for product galleries
+- [ ] Image cropping before upload
+- [ ] Drag-and-drop file upload
+- [ ] Progress bar for uploads
+- [ ] Bulk image operations
+- [ ] Image compression options
+- [ ] Automatic thumbnail generation
