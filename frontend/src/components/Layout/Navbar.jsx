@@ -3,11 +3,15 @@ import { ShoppingCart, User, Menu, Search, LogOut, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/context/AuthContext'
+import { useCart } from '@/context/CartContext'
 import { isAdmin } from '@/utils/auth'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { getCartItemCount } = useCart()
   const navigate = useNavigate()
+  
+  const cartItemCount = getCartItemCount()
 
   const handleLogout = () => {
     logout()
@@ -81,9 +85,11 @@ export default function Navbar() {
             <Link to="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
-                  3
-                </span>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  </span>
+                )}
               </Button>
             </Link>
             <Button variant="ghost" size="icon" className="md:hidden">

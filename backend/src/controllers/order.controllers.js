@@ -3,15 +3,34 @@ import { Cart } from '../models/cart.model.js'
 import { Product } from '../models/product.model.js'
 import Stripe from 'stripe'
 
-// Initialize Stripe only if key is provided and valid
+// Lazy initialization of Stripe
 let stripe = null
-if (process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('your_stripe_secret_key_here')) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+let stripeInitialized = false
+
+const getStripe = () => {
+    if (!stripeInitialized) {
+        stripeInitialized = true
+        try {
+            if (process.env.STRIPE_SECRET_KEY && 
+                !process.env.STRIPE_SECRET_KEY.includes('your_stripe_secret_key_here') &&
+                process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
+                stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+                console.log('✅ Stripe initialized successfully')
+            } else {
+                console.warn('⚠️  Stripe not configured - payment features will be limited')
+            }
+        } catch (error) {
+            console.error('❌ Failed to initialize Stripe:', error.message)
+        }
+    }
+    return stripe
 }
 
 // Create payment intent
 export const createPaymentIntent = async (req, res) => {
     try {
+        const stripe = getStripe()
+        
         if (!stripe) {
             return res.status(503).json({
                 success: false,
@@ -90,6 +109,7 @@ export const createOrder = async (req, res) => {
         const total = subtotal + tax + shipping
 
         // Verify payment if Stripe is configured
+        const stripe = getStripe()
         if (stripe) {
             const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId)
             
@@ -115,8 +135,13 @@ export const createOrder = async (req, res) => {
             price: item.price
         }))
 
+        // Generate unique order number
+        const orderCount = await Order.countDocuments()
+        const orderNumber = `ORD-${String(orderCount + 1).padStart(6, '0')}`
+
         // Create order
         const order = await Order.create({
+            orderNumber,
             user: req.user._id,
             items: orderItems,
             shippingAddress,

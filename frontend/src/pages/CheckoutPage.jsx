@@ -39,10 +39,51 @@ function CheckoutForm() {
   const total = subtotal + tax + shipping
 
   const handleInputChange = (e) => {
-    setShippingInfo({
-      ...shippingInfo,
-      [e.target.name]: e.target.value
-    })
+    const { name, value } = e.target
+    
+    // Format ZIP code as user types
+    if (name === 'zipCode') {
+      // Remove non-digits
+      let formatted = value.replace(/\D/g, '')
+      
+      // Limit to 5 digits for Stripe compatibility
+      formatted = formatted.slice(0, 5)
+      
+      setShippingInfo({
+        ...shippingInfo,
+        [name]: formatted
+      })
+    } else if (name === 'state') {
+      // Convert to uppercase and limit to 2 characters
+      const formatted = value.toUpperCase().slice(0, 2)
+      setShippingInfo({
+        ...shippingInfo,
+        [name]: formatted
+      })
+    } else if (name === 'phone') {
+      // Format phone number
+      let formatted = value.replace(/\D/g, '')
+      formatted = formatted.slice(0, 10)
+      
+      if (formatted.length > 6) {
+        formatted = `(${formatted.slice(0, 3)}) ${formatted.slice(3, 6)}-${formatted.slice(6)}`
+      } else if (formatted.length > 3) {
+        formatted = `(${formatted.slice(0, 3)}) ${formatted.slice(3)}`
+      } else if (formatted.length > 0) {
+        formatted = `(${formatted}`
+      }
+      
+      setShippingInfo({
+        ...shippingInfo,
+        [name]: formatted
+      })
+    } else {
+      setShippingInfo({
+        ...shippingInfo,
+        [name]: value
+      })
+    }
+    
     setError('')
   }
 
@@ -61,6 +102,26 @@ function CheckoutForm() {
         return
       }
     }
+    
+    // Validate ZIP code format (5 digits or 5+4 format)
+    const zipCodeDigits = shippingInfo.zipCode.replace(/\D/g, '')
+    if (zipCodeDigits.length !== 5) {
+      setError('Please enter a valid 5-digit ZIP code')
+      return
+    }
+    
+    // Validate state code (2 letters)
+    if (shippingInfo.state.length !== 2) {
+      setError('Please enter a valid 2-letter state code (e.g., CA, NY)')
+      return
+    }
+    
+    // Validate phone number (10 digits)
+    const phoneDigits = shippingInfo.phone.replace(/\D/g, '')
+    if (phoneDigits.length !== 10) {
+      setError('Please enter a valid 10-digit phone number')
+      return
+    }
 
     setLoading(true)
     setError('')
@@ -69,17 +130,25 @@ function CheckoutForm() {
       // Create payment intent
       const { clientSecret, paymentIntentId } = await orderAPI.createPaymentIntent(total)
 
+      // Clean and validate postal code - must be exactly 5 digits for Stripe
+      const cleanZipCode = shippingInfo.zipCode.replace(/\D/g, '').slice(0, 5)
+      const cleanPhone = shippingInfo.phone.replace(/\D/g, '')
+
+      console.log('Submitting payment with ZIP:', cleanZipCode, 'length:', cleanZipCode.length)
+
       // Confirm payment
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
           billing_details: {
             name: shippingInfo.fullName,
+            phone: cleanPhone,
             address: {
               line1: shippingInfo.address,
               city: shippingInfo.city,
               state: shippingInfo.state,
-              postal_code: shippingInfo.zipCode
+              postal_code: cleanZipCode,
+              country: 'US'
             }
           }
         }
@@ -153,24 +222,29 @@ function CheckoutForm() {
               />
             </div>
             <div>
-              <Label htmlFor="state">State</Label>
+              <Label htmlFor="state">State (2-letter code)</Label>
               <Input
                 id="state"
                 name="state"
                 value={shippingInfo.state}
                 onChange={handleInputChange}
+                placeholder="CA"
+                maxLength={2}
+                style={{ textTransform: 'uppercase' }}
                 required
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="zipCode">ZIP Code</Label>
+              <Label htmlFor="zipCode">ZIP Code (5 digits)</Label>
               <Input
                 id="zipCode"
                 name="zipCode"
                 value={shippingInfo.zipCode}
                 onChange={handleInputChange}
+                placeholder="12345"
+                maxLength={5}
                 required
               />
             </div>
@@ -182,6 +256,8 @@ function CheckoutForm() {
                 type="tel"
                 value={shippingInfo.phone}
                 onChange={handleInputChange}
+                placeholder="(555) 123-4567"
+                maxLength={14}
                 required
               />
             </div>
@@ -201,6 +277,7 @@ function CheckoutForm() {
           <div className="p-4 border rounded-lg">
             <CardElement
               options={{
+                hidePostalCode: true,
                 style: {
                   base: {
                     fontSize: '16px',

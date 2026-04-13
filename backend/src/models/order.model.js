@@ -68,7 +68,6 @@ const shippingAddressSchema = new mongoose.Schema({
 const orderSchema = new mongoose.Schema({
     orderNumber: {
         type: String,
-        required: true,
         unique: true
     },
     user: {
@@ -134,12 +133,11 @@ const orderSchema = new mongoose.Schema({
 })
 
 // Generate order number before saving
-orderSchema.pre('save', async function(next) {
+orderSchema.pre('save', async function() {
     if (!this.orderNumber) {
         const count = await mongoose.model('Order').countDocuments()
         this.orderNumber = `ORD-${String(count + 1).padStart(6, '0')}`
     }
-    next()
 })
 
 export const Order = mongoose.model("Order", orderSchema)

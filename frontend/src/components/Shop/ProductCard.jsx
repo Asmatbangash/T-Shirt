@@ -1,12 +1,40 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { LazyImage } from '@/components/ui/lazy-image'
 import { ShoppingCart, Heart, Eye } from 'lucide-react'
+import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
+import { toast } from 'sonner'
 
 export default function ProductCard({ product }) {
   const productId = product._id || product.id
+  const { addToCart } = useCart()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault() // Prevent Link navigation
+    e.stopPropagation()
+
+    if (!user) {
+      toast.error('Please login to add items to cart')
+      navigate('/login')
+      return
+    }
+
+    try {
+      // Use default size and first color if available
+      const defaultSize = product.sizes?.[0] || 'M'
+      const defaultColor = product.colors?.[0] || ''
+      
+      await addToCart(productId, 1, defaultSize, defaultColor)
+      toast.success('Added to cart!')
+    } catch (error) {
+      toast.error(error.message || 'Failed to add to cart')
+    }
+  }
   
   return (
     <Link to={`/product/${productId}`}>
@@ -33,6 +61,7 @@ export default function ProductCard({ product }) {
         
         <Button 
           className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={handleAddToCart}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           Add to Cart

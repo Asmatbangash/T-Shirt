@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import Navbar from '@/components/Layout/Navbar'
 import Footer from '@/components/Layout/Footer'
 import { Button } from '@/components/ui/button'
@@ -7,13 +7,21 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { ShoppingCart, Heart, Star, Truck, Shield, RotateCcw, Loader2, AlertCircle } from 'lucide-react'
 import { productAPI } from '@/services/api'
+import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
+import { toast } from 'sonner'
 
 export default function ProductDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { addToCart } = useCart()
+  const { user } = useAuth()
+  
   const [product, setProduct] = useState(null)
   const [relatedProducts, setRelatedProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [addingToCart, setAddingToCart] = useState(false)
   
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState('M')
@@ -34,6 +42,11 @@ export default function ProductDetailPage() {
       if (response.success) {
         setProduct(response.product)
         
+        // Set default size and color
+        if (response.product.sizes && response.product.sizes.length > 0) {
+          setSelectedSize(response.product.sizes[0])
+        }
+        
         // Fetch related products from same category
         const relatedResponse = await productAPI.getProductsByCategory(response.product.category, 4)
         if (relatedResponse.success) {
@@ -44,6 +57,25 @@ export default function ProductDetailPage() {
       setError(err.message || 'Failed to load product')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAddToCart = async () => {
+    if (!user) {
+      toast.error('Please login to add items to cart')
+      navigate('/login')
+      return
+    }
+
+    try {
+      setAddingToCart(true)
+      const color = product.colors?.[selectedColor] || ''
+      await addToCart(product._id, quantity, selectedSize, color)
+      toast.success(`Added ${quantity} item(s) to cart!`)
+    } catch (error) {
+      toast.error(error.message || 'Failed to add to cart')
+    } finally {
+      setAddingToCart(false)
     }
   }
 
@@ -209,10 +241,20 @@ export default function ProductDetailPage() {
                 <Button 
                   size="lg" 
                   className="flex-1 h-12 text-base"
-                  disabled={product.stock === 0}
+                  disabled={product.stock === 0 || addingToCart}
+                  onClick={handleAddToCart}
                 >
-                  <ShoppingCart className="mr-2 h-5 w-5" />
-                  {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                  {addingToCart ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      {product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}
+                    </>
+                  )}
                 </Button>
                 <Button size="lg" variant="outline" className="h-12 w-12 p-0">
                   <Heart className="h-5 w-5" />
