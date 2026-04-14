@@ -18,9 +18,5 @@
       "src": "/(.*)",
       "dest": "/frontend/dist/index.html"
     }
-  ],
-  "env": {
-    "VITE_API_URL": "@api_url",
-    "VITE_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key"
-  }
+  ]
 }
